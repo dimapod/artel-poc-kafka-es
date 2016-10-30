@@ -1,5 +1,7 @@
 package com.artel.poc.acq;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class TripMessage {
     private long imei;
     private long tripId;
@@ -48,6 +50,7 @@ public class TripMessage {
         this.events = events;
     }
 
+    @JsonIgnore
     public boolean isStart() {
         return TripMessageType.START.equals(this.getType());
     }
