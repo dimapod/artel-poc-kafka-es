@@ -1,0 +1,34 @@
+**/.idea
+**/target/*
+**/*.iml
+**/*.project
+**/*.classpath
+**/*.settings
+**/*.DS_Store
+*/.gitignore
+**/*.log
+**/*.log.*
+**/.~*#
+**/LOCAL.properties
+
+#vagrant && ansible
+.vagrant
+*.rpm
+*.zip
+*.gz
+*.retry
+
+#utils
+*.uml
+
+# maven release files
+release.properties
+pom.xml.tag
+pom.xml.next
+pom.xml.branch
+pom.xml.releaseBackup
+debug.txt
+result.json
+
+# specific conf for ovh serveur
+telematics-infra/environments/logs/service/config/logstash.conf
