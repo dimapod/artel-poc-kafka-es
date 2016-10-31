@@ -5,10 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.*;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.listener.MessageListenerContainer;
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -16,7 +16,6 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.AbstractMessageListenerContainer;
-import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.config.ContainerProperties;
 import org.springframework.kafka.support.TopicPartitionInitialOffset;
@@ -28,9 +27,19 @@ import java.util.Map;
 @EnableKafka
 @PropertySource("classpath:application.properties")
 public class KafkaConfig {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final String kafkaBroker = "localhost:9092";
-    private String group = "kafka-1";
+    @Value("${kafka.broker:localhost:9092}")
+    private String kafkaBroker;
+
+    @Value("${kafka.group:kafka-1}")
+    private String group;
+
+    @Value("${kafka.partitionId:0}")
+    private int partitionId;
+
+    @Value("${kafka.topic:acq}")
+    private String topic;
 
     @Autowired
     private AcqListener acqListener;
@@ -78,19 +87,16 @@ public class KafkaConfig {
         return props;
     }
 
-//    @Bean
-//    public KafkaMessageListenerContainer container() throws Exception {
-//        final KafkaMessageListenerContainer kafkaMessageListenerContainer = new KafkaMessageListenerContainer(
-//                kafkaListenerContainerFactory(), new Partition(this.topic, 0));
-//        kafkaMessageListenerContainer.setOffsetManager(offsetManager);
-//        kafkaMessageListenerContainer.setMaxFetch(100);
-//        kafkaMessageListenerContainer.setsetConcurrency(1);
-//        return kafkaMessageListenerContainer;
-//    }
-
     @Bean
     public ContainerProperties containerProps() {
-        TopicPartitionInitialOffset topicPartitionInitialOffset = new TopicPartitionInitialOffset("acq", 0);
+        logger.info("\n-----------------------------------\n" +
+        "Kafka Broker    : {}\n" +
+        "Kafka Topic     : {}\n" +
+        "Kafka Group     : {}\n" +
+        "Kafka Partition : {}\n" +
+        "-----------------------------------", kafkaBroker, topic, group, partitionId);
+
+        TopicPartitionInitialOffset topicPartitionInitialOffset = new TopicPartitionInitialOffset(topic, partitionId);
         ContainerProperties containerProperties = new ContainerProperties(topicPartitionInitialOffset);
         containerProperties.setAckMode(AbstractMessageListenerContainer.AckMode.MANUAL);
         return containerProperties;
@@ -98,12 +104,10 @@ public class KafkaConfig {
 
     @Bean
     public KafkaMessageListenerContainer<Integer, String> createContainer(ContainerProperties containerProps) {
+        // Use ConcurrentMessageListenerContainer ?
         DefaultKafkaConsumerFactory<Integer, String> cf = new DefaultKafkaConsumerFactory<>(consumerConfigs());
         KafkaMessageListenerContainer<Integer, String> container = new KafkaMessageListenerContainer<>(cf, containerProps);
         container.setupMessageListener(acqListener);
-
-        // Use ConcurrentMessageListenerContainer ?
-
         return container;
     }
 

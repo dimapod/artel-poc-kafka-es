@@ -16,15 +16,17 @@ public class VehicleTrips {
     private long offset;
 
     public Optional<Long> processMessage(TripMessage tripMessage, long offset) {
-        if (!tripList.isEmpty() && tripMessage.getTripId() <= tripList.get(tripList.size() - 1).getTripId()) {
-            logger.debug("Message already processed {}", tripMessage);
+        if (!isNew(tripMessage)) {
+            logger.warn("Old message: {}", tripMessage);
             return Optional.empty();
         }
 
+        Optional<Long> response = Optional.empty();
         if (pendingMessage != null
                 && pendingMessage.getTripId() != tripMessage.getTripId()) {
             logger.debug("Missing messages: start id {} - received id {}", pendingMessage.getTripId(), tripMessage.getTripId());
             saveTrip(this.pendingMessage, null);
+            response = Optional.of(this.offset);
             this.pendingMessage = null;
         }
 
@@ -32,14 +34,12 @@ public class VehicleTrips {
         if (tripMessage.isStart()) {
             this.pendingMessage = tripMessage;
             this.offset = offset;
-            return Optional.empty();
+            return response;
         }
 
         // End
-        Optional<Long> response;
         if (this.pendingMessage == null) {
             logger.debug("Missing start");
-            response = Optional.empty();
         } else {
             response = Optional.of(this.offset);
         }
@@ -47,6 +47,20 @@ public class VehicleTrips {
         saveTrip(this.pendingMessage, tripMessage);
         this.pendingMessage = null;
         return response;
+    }
+
+    public boolean isNew(TripMessage tripMessage) {
+        if (pendingMessage != null &&
+                (tripMessage.getTripId() < pendingMessage.getTripId() ||
+                (tripMessage.isStart() && tripMessage.getTripId() == pendingMessage.getTripId()))) {
+            return false;
+        }
+        return tripMessage.getTripId() > getLastTripId();
+    }
+
+
+    private long getLastTripId() {
+        return tripList.isEmpty() ? -1 : tripList.get(tripList.size() - 1).getTripId();
     }
 
     private Trip saveTrip(TripMessage startMessage, TripMessage stopMessage) {

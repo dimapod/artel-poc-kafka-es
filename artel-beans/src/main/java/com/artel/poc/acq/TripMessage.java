@@ -55,6 +55,11 @@ public class TripMessage {
         return TripMessageType.START.equals(this.getType());
     }
 
+    @JsonIgnore
+    public boolean isEnd() {
+        return TripMessageType.END.equals(this.getType());
+    }
+
     @Override
     public String toString() {
         return "TripMessage{" +

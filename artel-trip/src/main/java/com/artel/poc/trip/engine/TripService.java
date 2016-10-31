@@ -15,17 +15,10 @@ import java.util.Optional;
 public class TripService {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-//    Map<Long, VehicleTrips> vehicles = new HashMap<>();
-//    TreeMap<Long, Acknowledgment> acks = new TreeMap<>();
-
     @Autowired
     private TripContainer tripContainer;
 
     public void process(TripMessage tripMessage, long offset, Acknowledgment acknowledgment) {
-        // Store ack for start messages
-        if (tripMessage.isStart()) {
-            tripContainer.getAcks().put(offset, acknowledgment);
-        }
 
         // Process message
         VehicleTrips vehicleTrips = tripContainer.getVehicles().get(tripMessage.getImei());
@@ -34,6 +27,12 @@ public class TripService {
             vehicleTrips = new VehicleTrips();
             tripContainer.getVehicles().put(tripMessage.getImei(), vehicleTrips);
         }
+
+        // Store ack for start messages
+        if (tripMessage.isStart() && vehicleTrips.isNew(tripMessage)) {
+            tripContainer.getAcks().put(offset, acknowledgment);
+        }
+
         Optional<Long> startMessageOffset = vehicleTrips.processMessage(tripMessage, offset);
 
         // Commit offset

@@ -62,7 +62,8 @@ public class VehicleTripsTest {
         Optional<Long> offset = vehicleTrips.processMessage(start2, 2L);
 
         // then
-        assertThat(offset.isPresent()).isFalse();
+        assertThat(offset.isPresent()).isTrue();
+        assertThat(offset.get()).isEqualTo(1L);
         assertThat(vehicleTrips.getTripList()).hasSize(1);
         assertThat(vehicleTrips.getTripList().get(0).getStartMessage()).isNotNull();
         assertThat(vehicleTrips.getTripList().get(0).getEndMessage()).isNull();
@@ -89,19 +90,37 @@ public class VehicleTripsTest {
     public void should_process_missing_trip() {
         // given
         vehicleTrips.processMessage(prepareMessage(100L, 10L, START), 1L);
-        TripMessage start = prepareMessage(100L, 12L, END);
 
         // when
-        Optional<Long> offset = vehicleTrips.processMessage(start, 2L);
+        Optional<Long> offset = vehicleTrips.processMessage(prepareMessage(100L, 12L, END), 2L);
 
         // then
-        assertThat(offset.isPresent()).isFalse();
+        assertThat(offset.isPresent()).isTrue();
+        assertThat(offset.get()).isEqualTo(1L);
         assertThat(vehicleTrips.getTripList()).hasSize(2);
         assertThat(vehicleTrips.getTripList().get(0).getStartMessage()).isNotNull();
         assertThat(vehicleTrips.getTripList().get(0).getEndMessage()).isNull();
         assertThat(vehicleTrips.getTripList().get(1).getStartMessage()).isNull();
         assertThat(vehicleTrips.getTripList().get(1).getEndMessage()).isNotNull();
         assertThat(vehicleTrips.getPendingMessage()).isNull();
+    }
+
+    @Test
+    public void should_verify_is_new() throws Exception {
+        assertThat(vehicleTrips.isNew(prepareMessage(100L, 10L, START))).isTrue();
+        assertThat(vehicleTrips.isNew(prepareMessage(100L, 10L, END))).isTrue();
+
+        vehicleTrips.processMessage(prepareMessage(100L, 10L, START), 1L);
+        assertThat(vehicleTrips.isNew(prepareMessage(100L, 10L, START))).isFalse();
+        assertThat(vehicleTrips.isNew(prepareMessage(100L, 10L, END))).isTrue();
+        assertThat(vehicleTrips.isNew(prepareMessage(100L, 1L, END))).isFalse();
+        assertThat(vehicleTrips.isNew(prepareMessage(100L, 200L, END))).isTrue();
+
+        vehicleTrips.processMessage(prepareMessage(100L, 10L, END), 1L);
+        assertThat(vehicleTrips.isNew(prepareMessage(100L, 10L, START))).isFalse();
+        assertThat(vehicleTrips.isNew(prepareMessage(100L, 10L, END))).isFalse();
+        assertThat(vehicleTrips.isNew(prepareMessage(100L, 11L, START))).isTrue();
+        assertThat(vehicleTrips.isNew(prepareMessage(100L, 11L, END))).isTrue();
     }
 
     private TripMessage prepareMessage(long imei, long tripId, TripMessageType start) {
