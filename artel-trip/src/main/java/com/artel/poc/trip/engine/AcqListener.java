@@ -17,7 +17,7 @@ public class AcqListener implements AcknowledgingMessageListener {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    private TripService tripService;
+    private TripEngine tripEngine;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -28,7 +28,7 @@ public class AcqListener implements AcknowledgingMessageListener {
         try {
             TripMessage tripMessage = parse((ConsumerRecord) data);
             System.out.println("Received : " + tripMessage);
-            tripService.process(tripMessage, ((ConsumerRecord) data).offset(), acknowledgment);
+            tripEngine.process(tripMessage, ((ConsumerRecord) data).offset(), acknowledgment);
         } catch (IOException e) {
             logger.error("Message can not be parsed", e);
         }

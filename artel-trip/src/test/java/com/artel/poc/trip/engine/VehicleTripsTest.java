@@ -2,13 +2,12 @@ package com.artel.poc.trip.engine;
 
 import com.artel.poc.acq.TripMessage;
 import com.artel.poc.acq.TripMessageType;
+import com.artel.poc.trip.Trip;
 import com.artel.poc.trip.engine.bean.VehicleTrips;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.Optional;
 
 import static com.artel.poc.acq.TripMessageType.END;
 import static com.artel.poc.acq.TripMessageType.START;
@@ -25,98 +24,18 @@ public class VehicleTripsTest {
     }
 
     @Test
-    public void should_process_start() {
-        TripMessage start = prepareMessage(100L, 10L, START);
-        Optional<Long> offset = vehicleTrips.processMessage(start, 1L);
-        assertThat(offset.isPresent()).isFalse();
-        assertThat(vehicleTrips.getOffset()).isEqualTo(1L);
-        assertThat(vehicleTrips.getPendingMessage()).isEqualTo(start);
-        assertThat(vehicleTrips.getTripList()).isEmpty();
-    }
-
-    @Test
-    public void should_process_end() {
-        // given
-        vehicleTrips.processMessage(prepareMessage(100L, 10L, START), 1L);
-        TripMessage end = prepareMessage(100L, 10L, END);
-
-        // when
-        Optional<Long> offset = vehicleTrips.processMessage(end, 2L);
-
-        // then
-        assertThat(offset.isPresent()).isTrue();
-        assertThat(offset.get()).isEqualTo(1L);
-        assertThat(vehicleTrips.getTripList()).hasSize(1);
-        assertThat(vehicleTrips.getTripList().get(0).getStartMessage()).isNotNull();
-        assertThat(vehicleTrips.getTripList().get(0).getEndMessage()).isNotNull();
-        assertThat(vehicleTrips.getPendingMessage()).isNull();
-    }
-
-    @Test
-    public void should_process_end_without_start() {
-        // given
-        vehicleTrips.processMessage(prepareMessage(100L, 10L, START), 1L);
-        TripMessage start2 = prepareMessage(100L, 11L, START);
-
-        // when
-        Optional<Long> offset = vehicleTrips.processMessage(start2, 2L);
-
-        // then
-        assertThat(offset.isPresent()).isTrue();
-        assertThat(offset.get()).isEqualTo(1L);
-        assertThat(vehicleTrips.getTripList()).hasSize(1);
-        assertThat(vehicleTrips.getTripList().get(0).getStartMessage()).isNotNull();
-        assertThat(vehicleTrips.getTripList().get(0).getEndMessage()).isNull();
-        assertThat(vehicleTrips.getPendingMessage()).isEqualTo(start2);
-    }
-
-    @Test
-    public void should_process_start_after_start() {
-        // given
-        TripMessage end = prepareMessage(100L, 10L, END);
-
-        // when
-        Optional<Long> offset = vehicleTrips.processMessage(end, 2L);
-
-        // then
-        assertThat(offset.isPresent()).isFalse();
-        assertThat(vehicleTrips.getTripList()).hasSize(1);
-        assertThat(vehicleTrips.getTripList().get(0).getStartMessage()).isNull();
-        assertThat(vehicleTrips.getTripList().get(0).getEndMessage()).isNotNull();
-        assertThat(vehicleTrips.getPendingMessage()).isNull();
-    }
-
-    @Test
-    public void should_process_missing_trip() {
-        // given
-        vehicleTrips.processMessage(prepareMessage(100L, 10L, START), 1L);
-
-        // when
-        Optional<Long> offset = vehicleTrips.processMessage(prepareMessage(100L, 12L, END), 2L);
-
-        // then
-        assertThat(offset.isPresent()).isTrue();
-        assertThat(offset.get()).isEqualTo(1L);
-        assertThat(vehicleTrips.getTripList()).hasSize(2);
-        assertThat(vehicleTrips.getTripList().get(0).getStartMessage()).isNotNull();
-        assertThat(vehicleTrips.getTripList().get(0).getEndMessage()).isNull();
-        assertThat(vehicleTrips.getTripList().get(1).getStartMessage()).isNull();
-        assertThat(vehicleTrips.getTripList().get(1).getEndMessage()).isNotNull();
-        assertThat(vehicleTrips.getPendingMessage()).isNull();
-    }
-
-    @Test
     public void should_verify_is_new() throws Exception {
         assertThat(vehicleTrips.isNew(prepareMessage(100L, 10L, START))).isTrue();
         assertThat(vehicleTrips.isNew(prepareMessage(100L, 10L, END))).isTrue();
 
-        vehicleTrips.processMessage(prepareMessage(100L, 10L, START), 1L);
+        vehicleTrips.setPendingMessage(prepareMessage(100L, 10L, START));
         assertThat(vehicleTrips.isNew(prepareMessage(100L, 10L, START))).isFalse();
         assertThat(vehicleTrips.isNew(prepareMessage(100L, 10L, END))).isTrue();
         assertThat(vehicleTrips.isNew(prepareMessage(100L, 1L, END))).isFalse();
         assertThat(vehicleTrips.isNew(prepareMessage(100L, 200L, END))).isTrue();
 
-        vehicleTrips.processMessage(prepareMessage(100L, 10L, END), 1L);
+        vehicleTrips.setPendingMessage(null);
+        vehicleTrips.addTrip(new Trip(prepareMessage(100L, 10L, START), prepareMessage(100L, 10L, END)));
         assertThat(vehicleTrips.isNew(prepareMessage(100L, 10L, START))).isFalse();
         assertThat(vehicleTrips.isNew(prepareMessage(100L, 10L, END))).isFalse();
         assertThat(vehicleTrips.isNew(prepareMessage(100L, 11L, START))).isTrue();
