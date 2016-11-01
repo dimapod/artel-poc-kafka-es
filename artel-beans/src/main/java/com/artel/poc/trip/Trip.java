@@ -1,9 +1,13 @@
 package com.artel.poc.trip;
 
 import com.artel.poc.acq.TripMessage;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Trip {
     TripMessage startMessage, endMessage;
+
+    public Trip() {
+    }
 
     public Trip(TripMessage startMessage, TripMessage endMessage) {
         this.startMessage = startMessage;
@@ -26,6 +30,7 @@ public class Trip {
         this.endMessage = endMessage;
     }
 
+    @JsonIgnore
     public long getTripId() {
         return this.startMessage != null ? this.startMessage.getTripId() : this.endMessage.getTripId();
     }

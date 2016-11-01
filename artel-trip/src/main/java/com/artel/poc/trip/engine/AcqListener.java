@@ -27,7 +27,6 @@ public class AcqListener implements AcknowledgingMessageListener {
 
         try {
             TripMessage tripMessage = parse((ConsumerRecord) data);
-            System.out.println("Received : " + tripMessage);
             tripEngine.process(tripMessage, ((ConsumerRecord) data).offset(), acknowledgment);
         } catch (IOException e) {
             logger.error("Message can not be parsed", e);

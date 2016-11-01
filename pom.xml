@@ -13,6 +13,7 @@
         <module>artel-beans</module>
         <module>artel-acq</module>
         <module>artel-trip</module>
+        <module>artel-es</module>
     </modules>
 
     <properties>
@@ -49,7 +50,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 

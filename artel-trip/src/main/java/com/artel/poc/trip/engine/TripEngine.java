@@ -22,6 +22,7 @@ public class TripEngine {
     private TripComposer tripComposer;
 
     public void process(TripMessage tripMessage, long offset, Acknowledgment acknowledgment) {
+        logger.debug("Received message ({}): {}", offset, tripMessage);
 
         // Process message
         VehicleTrips vehicleTrips = tripContainer.getVehicles().get(tripMessage.getImei());
@@ -45,7 +46,7 @@ public class TripEngine {
     private void commit(long offsetToCommit) {
         if (offsetToCommit == tripContainer.getAcks().firstKey()) {
             tripContainer.getAcks().get(offsetToCommit).acknowledge();
-            logger.debug("Commit {}", offsetToCommit);
+            logger.debug("Commit offset {}", offsetToCommit);
         }
         tripContainer.getAcks().remove(offsetToCommit);
     }
