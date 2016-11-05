@@ -12,7 +12,7 @@
 - Start Kafka broker(s): `bin/kafka-server-start.sh config/server.properties`
 
 ### ElasticSearch
-Start ES: `docker run --name elasticsearch2 -d -p 9200:9200 -p 9300:9300  -e ES_JAVA_OPTS="-Xms1g -Xmx1g" elasticsearch:2.4.1`
+Start ES: `docker run --name es -v /tmp/es-arval:/usr/share/elasticsearch/data -d -p 9200:9200 -p 9300:9300  -e ES_JAVA_OPTS="-Xms1g -Xmx1g" elasticsearch:2.4.1`
            
 ### Start Apps
 - Acq (9901): `spring-boot:run -pl artel-acq`

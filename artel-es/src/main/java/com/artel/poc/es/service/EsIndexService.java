@@ -23,7 +23,7 @@ public class EsIndexService {
     public void indexTrip(Trip trip) throws JsonProcessingException {
         String json = objectMapper.writeValueAsString(trip);
 
-        IndexResponse response = client.prepareIndex("artel", "trip")
+        IndexResponse response = client.prepareIndex("arval", "trip")
                 .setSource(json)
                 .get();
 

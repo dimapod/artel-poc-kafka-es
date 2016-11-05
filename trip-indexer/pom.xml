@@ -10,8 +10,12 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>artel-es</artifactId>
+    <artifactId>trip-indexer</artifactId>
     <version>0.1-SNAPSHOT</version>
+
+    <properties>
+        <java.version>1.8</java.version>
+    </properties>
 
     <build>
         <resources>
@@ -23,27 +27,23 @@
     </build>
 
     <dependencies>
-        <!--Internal-->
-        <dependency>
-            <groupId>com.artel.poc</groupId>
-            <artifactId>artel-beans</artifactId>
-            <version>0.1-SNAPSHOT</version>
-        </dependency>
-
         <!--External-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
             <version>2.4.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-            <version>1.1.1.RELEASE</version>
         </dependency>
 
         <!--Tests-->
