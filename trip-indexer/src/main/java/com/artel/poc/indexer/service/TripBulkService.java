@@ -21,17 +21,12 @@ public class TripBulkService {
     private TransportClient client;
 
     public void bulkToEs(List<TripJson> tripJsons) {
-        logger.debug("Bulk {} trips", tripJsons.size());
-
         BulkRequestBuilder bulkRequest = client.prepareBulk();
 
         for (TripJson tripJson : tripJsons) {
             IndexRequestBuilder index = client.prepareIndex("artel", "trip", String.valueOf(tripJson.getId()))
                     .setId(String.valueOf(tripJson.getId()))
                     .setSource(tripJson.getJson());
-
-//            logger.debug("Index {} trip", tripJson.getId());
-//            index.get();
             bulkRequest.add(index);
         }
 

@@ -5,23 +5,20 @@ import com.artel.poc.indexer.service.bean.TripJson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @Service
 public class IndexerService {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    @Autowired
-    private AuthService authService;
-
-    @Autowired
-    private RestTemplate restTemplate;
 
     @Autowired
     private TripCreatorService tripCreatorService;
@@ -32,16 +29,13 @@ public class IndexerService {
     @Autowired
     private TripBulkService tripBulkService;
 
-    public void startIndexation(long fromId, long toId) {
+    @Async
+    public Future<Integer> startIndexation(long fromId, long toId, List<String> cookies) {
         Map<String, Long> times = new LinkedHashMap<>();
-
-        // Login
-        long start = System.currentTimeMillis();
-        List<String> cookies = authService.login();
-        times.put("login", diff(start));
+        logger.debug("Start task: [{} - {}]", fromId, toId);
 
         // Fetch
-        start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
         List<List<Result>> result = tripFetcherService.fetch(fromId, toId, cookies);
         times.put("fetch", diff(start));
 
@@ -57,12 +51,9 @@ public class IndexerService {
         tripBulkService.bulkToEs(tripsJson);
         times.put("bulk", diff(start));
 
-        // Logout
-        start = System.currentTimeMillis();
-        authService.logout(cookies);
-        times.put("logout", diff(start));
+        logger.debug("... end task: [{} - {}] ({})", fromId, toId, times);
 
-        logger.debug("Timer: {}", times);
+        return new AsyncResult<>(10);
     }
 
     private long diff(long start) {

@@ -21,10 +21,10 @@ public class IndexerApplication extends AsyncConfigurerSupport {
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(2);
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(5);
         executor.setQueueCapacity(50);
-        executor.setThreadNamePrefix("GithubLookup-");
+        executor.setThreadNamePrefix("BulkIndexer-");
         executor.initialize();
         return executor;
     }
