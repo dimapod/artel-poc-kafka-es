@@ -1,5 +1,6 @@
 package com.artel.poc.indexer.service;
 
+import com.artel.poc.indexer.service.bean.AuthInfo;
 import com.artel.poc.indexer.service.bean.Result;
 import com.artel.poc.indexer.service.bean.TripJson;
 import org.slf4j.Logger;
@@ -30,13 +31,13 @@ public class IndexerService {
     private TripBulkService tripBulkService;
 
     @Async
-    public Future<Integer> startIndexation(long fromId, long toId, List<String> cookies) {
+    public Future<Integer> startIndexation(long fromId, long toId, AuthInfo authInfo) {
         Map<String, Long> times = new LinkedHashMap<>();
         logger.debug("Start task: [{} - {}]", fromId, toId);
 
         // Fetch
         long start = System.currentTimeMillis();
-        List<List<Result>> result = tripFetcherService.fetch(fromId, toId, cookies);
+        List<List<Result>> result = tripFetcherService.fetch(fromId, toId, authInfo);
         times.put("fetch", diff(start));
 
         // Transform

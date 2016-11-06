@@ -1,5 +1,6 @@
 package com.artel.poc.indexer.service;
 
+import com.artel.poc.indexer.service.bean.AuthInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class MainExecutor {
         List<Future<Integer>> tasks = new ArrayList<>();
 
         // Login
-        List<String> cookies = authService.login();
+        AuthInfo authInfo = authService.login();
         logger.debug("-LOGIN-");
 
         // Threads
@@ -36,7 +37,7 @@ public class MainExecutor {
             while (tasks.size() < THREAD_NB) {
                 long begin = counter;
                 counter = counter + STEP;
-                Future<Integer> task = indexerService.startIndexation(begin, counter, cookies);
+                Future<Integer> task = indexerService.startIndexation(begin, counter, authInfo);
                 tasks.add(task);
                 //tasks.add(indexerService.testAsync(begin, counter));
             }
@@ -53,7 +54,7 @@ public class MainExecutor {
         }
 
         // Logout
-        authService.logout(cookies);
+        authService.logout(authInfo);
         logger.debug("-LOGOUT-");
     }
 }
